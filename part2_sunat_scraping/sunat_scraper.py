@@ -1,14 +1,15 @@
 import argparse
 import os
+import re
 import time
 from datetime import date
 
 import pandas as pd
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait, Select
+from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.common.exceptions import TimeoutException, NoSuchElementException
+from selenium.common.exceptions import TimeoutException, StaleElementReferenceException
 
 
 URL = "https://e-consulta.sunat.gob.pe/cl-at-ittipcam/tcS01Alias"
@@ -17,78 +18,78 @@ START_MONTH = 1
 OUTPUT_DIR = "output"
 OUTPUT_FILE = "tipo_cambio_sunat.csv"
 WAIT_SECONDS = 15
-PAUSE_BETWEEN_REQUESTS = 2
+PAUSE_BETWEEN_CLICKS = 2
 
-SELECT_MES_ID = "TODO_id_del_select_de_mes"
-SELECT_ANIO_ID = "TODO_id_del_select_de_anio"
-BOTON_BUSCAR_ID = "TODO_id_o_texto_del_boton_buscar"
-TABLA_RESULTADOS_ID = "TODO_id_de_la_tabla_resultados"
+PREV_BUTTON_CLASS = "js-cal-prev"
+DAY_CELL_CLASS = "calendar-day"
+
+
+def parse_amount(text):
+    m = re.search(r"(\d+\.\d+)", text)
+    return float(m.group(1)) if m else None
 
 
 def build_driver():
-    """Configura y devuelve el navegador controlado por Selenium."""
-    options = webdriver.ChromeOptions()
+    options = webdriver.EdgeOptions()
     options.add_argument("--start-maximized")
-    driver = webdriver.Chrome(options=options)
+    options.add_experimental_option("excludeSwitches", ["enable-automation"])
+    options.add_experimental_option("useAutomationExtension", False)
+    driver = webdriver.Edge(options=options)
+    driver.execute_cdp_cmd(
+        "Page.addScriptToEvaluateOnNewDocument",
+        {"source": "Object.defineProperty(navigator, 'webdriver', {get: () => undefined})"},
+    )
     return driver
 
 
-def month_year_range(start_year: int, start_month: int):
-    """Genera tuplas (anio, mes) desde el inicio hasta el mes actual, inclusive."""
-    today = date.today()
-    year, month = start_year, start_month
-    while (year, month) <= (today.year, today.month):
-        yield year, month
-        month += 1
-        if month > 12:
-            month = 1
-            year += 1
+def months_between(start_year, start_month, end_year, end_month):
+    return (end_year - start_year) * 12 + (end_month - start_month)
 
 
-def scrape_month(driver, wait, year: int, month: int) -> list:
-    """
-    Consulta un mes/anio especifico en el formulario de SUNAT y devuelve
-    una lista de diccionarios con fecha, compra y venta para ese mes.
-    Si el mes no tiene datos publicados, devuelve una lista vacia (no falla).
-    """
-    driver.get(URL)
+def scrape_current_month(driver, year, month):
+    cells = driver.find_elements(By.CSS_SELECTOR, f".{DAY_CELL_CLASS}")
+    registros = []
+    for cell in cells:
+        text = cell.text.strip()
+        if "Compra" not in text or "Venta" not in text:
+            continue
+        lines = text.split("\n")
+        day_number = None
+        for line in lines:
+            if line.strip().isdigit():
+                day_number = int(line.strip())
+                break
+        if day_number is None:
+            continue
+        compra = None
+        venta = None
+        for line in lines:
+            if "Compra" in line:
+                compra = parse_amount(line)
+            if "Venta" in line:
+                venta = parse_amount(line)
+        if compra is None and venta is None:
+            continue
+        registros.append({
+            "fecha": f"{year:04d}-{month:02d}-{day_number:02d}",
+            "compra": compra,
+            "venta": venta,
+        })
+    return registros
 
-    try:
-        select_mes_el = wait.until(EC.presence_of_element_located((By.ID, SELECT_MES_ID)))
-        select_anio_el = wait.until(EC.presence_of_element_located((By.ID, SELECT_ANIO_ID)))
 
-        Select(select_mes_el).select_by_value(str(month))
-        Select(select_anio_el).select_by_value(str(year))
-
-        boton = wait.until(EC.element_to_be_clickable((By.ID, BOTON_BUSCAR_ID)))
-        boton.click()
-
-        tabla = wait.until(EC.presence_of_element_located((By.ID, TABLA_RESULTADOS_ID)))
-
-        filas = tabla.find_elements(By.TAG_NAME, "tr")
-        registros = []
-        for fila in filas:
-            celdas = fila.find_elements(By.TAG_NAME, "td")
-            if len(celdas) < 3:
-                continue
-            fecha_txt = celdas[0].text.strip()
-            compra_txt = celdas[1].text.strip()
-            venta_txt = celdas[2].text.strip()
-            if not fecha_txt:
-                continue
-            registros.append({
-                "fecha": fecha_txt,
-                "compra": compra_txt,
-                "venta": venta_txt,
-            })
-        return registros
-
-    except TimeoutException:
-        print(f"  [{year}-{month:02d}] Sin datos publicados o la pagina no cargo a tiempo. Se omite.")
-        return []
-    except NoSuchElementException:
-        print(f"  [{year}-{month:02d}] No se encontro un elemento esperado. Revisa los selectores TODO.")
-        return []
+def go_to_previous_month(driver, wait):
+    old_cells = driver.find_elements(By.CSS_SELECTOR, f".{DAY_CELL_CLASS}")
+    prev_button = driver.find_element(By.CSS_SELECTOR, f".{PREV_BUTTON_CLASS}")
+    prev_button.click()
+    if old_cells:
+        try:
+            wait.until(EC.staleness_of(old_cells[0]))
+        except TimeoutException:
+            time.sleep(PAUSE_BETWEEN_CLICKS)
+    else:
+        time.sleep(PAUSE_BETWEEN_CLICKS)
+    wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, f".{DAY_CELL_CLASS}")))
 
 
 def main():
@@ -98,43 +99,55 @@ def main():
     parser.add_argument("--output-dir", default=OUTPUT_DIR)
     args = parser.parse_args()
 
-    if "TODO" in SELECT_MES_ID or "TODO" in SELECT_ANIO_ID or "TODO" in BOTON_BUSCAR_ID or "TODO" in TABLA_RESULTADOS_ID:
-        print("ERROR: Todavia no completaste los selectores TODO al inicio del archivo.")
-        print("Revisa las instrucciones del chat para conseguirlos con el Inspector del navegador.")
-        return
-
     os.makedirs(args.output_dir, exist_ok=True)
+
+    today = date.today()
+    n_clicks = months_between(args.start_year, args.start_month, today.year, today.month)
 
     driver = build_driver()
     wait = WebDriverWait(driver, WAIT_SECONDS)
 
     todos_los_registros = []
-    meses_procesados = 0
+    meses_con_datos = 0
     meses_sin_datos = 0
 
     try:
-        for year, month in month_year_range(args.start_year, args.start_month):
-            print(f"Consultando {year}-{month:02d}...")
-            registros = scrape_month(driver, wait, year, month)
+        driver.get(URL)
+        wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, f".{DAY_CELL_CLASS}")))
+
+        year, month = today.year, today.month
+
+        for i in range(n_clicks + 1):
+            print(f"Leyendo {year}-{month:02d}...")
+            registros = scrape_current_month(driver, year, month)
             if registros:
-                for r in registros:
-                    r["anio"] = year
-                    r["mes"] = month
                 todos_los_registros.extend(registros)
-                meses_procesados += 1
+                meses_con_datos += 1
             else:
                 meses_sin_datos += 1
-            time.sleep(PAUSE_BETWEEN_REQUESTS)
+                print(f"  Sin datos visibles para {year}-{month:02d}, se omite.")
+
+            if i < n_clicks:
+                try:
+                    go_to_previous_month(driver, wait)
+                except (TimeoutException, StaleElementReferenceException) as e:
+                    print(f"  No se pudo retroceder de mes: {e}")
+                    break
+                month -= 1
+                if month < 1:
+                    month = 12
+                    year -= 1
     finally:
         driver.quit()
 
     df = pd.DataFrame(todos_los_registros)
+    df = df.sort_values("fecha").reset_index(drop=True)
     output_path = os.path.join(args.output_dir, OUTPUT_FILE)
     df.to_csv(output_path, index=False, encoding="utf-8")
 
     print("\n--- Resumen ---")
-    print(f"Meses con datos: {meses_procesados}")
-    print(f"Meses sin datos / omitidos: {meses_sin_datos}")
+    print(f"Meses con datos: {meses_con_datos}")
+    print(f"Meses sin datos: {meses_sin_datos}")
     print(f"Total de registros guardados: {len(df)}")
     print(f"Archivo generado: {output_path}")
 

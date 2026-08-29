@@ -1,0 +1,51 @@
+game_id,date,speed,rated,color,my_rating,opponent_rating,result,status
+kAdOQKeh,2026-04-08 19:39:03,take,False,black,3145,2644,win,Normal
+xKWdG1d1,2026-04-08 19:36:17,take,False,white,3131,2752,win,Normal
+SnXhGC57,2026-03-17 23:23:07,bullet,True,black,3238,3029,win,Normal
+nrmBGiQF,2026-03-17 23:21:55,bullet,True,white,3232,3032,win,Normal
+VOqkxbKK,2026-03-17 23:20:34,bullet,True,black,3226,3035,win,Normal
+haRbNEM1,2026-03-17 23:19:39,bullet,True,white,3219,3038,win,Normal
+SNG5EiHV,2026-03-17 23:18:37,bullet,True,black,3212,3041,win,Normal
+ItgC9JQz,2026-03-17 23:16:30,bullet,True,white,3232,3032,loss,Time forfeit
+uG80HxaK,2026-03-17 23:14:38,bullet,True,black,3225,3035,win,Normal
+8vvzLvgP,2026-03-17 23:13:12,bullet,True,white,3247,3026,loss,Normal
+QvJtZdDG,2026-03-17 23:11:37,bullet,True,black,3240,3029,win,Normal
+Jhes4kvM,2026-03-17 23:09:47,bullet,True,white,3264,3020,loss,Normal
+hQh8KffH,2026-03-17 23:08:39,bullet,True,black,3257,3023,win,Normal
+Bz3c7N7D,2026-03-17 23:06:40,bullet,True,white,3284,3013,loss,Normal
+G3tGP3Qv,2026-03-17 23:05:19,bullet,True,black,3277,3015,win,Normal
+1fLwz7QO,2026-03-17 23:03:14,bullet,True,white,3289,3012,draw,Normal
+K30CV7h1,2026-03-17 23:02:27,bullet,True,black,3282,3014,win,Normal
+zO5ZaqI6,2026-03-17 23:00:54,bullet,True,white,3276,3016,win,Normal
+zUxV8GLr,2026-01-19 10:22:57,bullet,True,white,3268,3099,win,Normal
+UEHX6oFD,2026-01-19 10:20:36,bullet,True,black,3275,3097,draw,Normal
+JrfNbeoz,2026-01-19 10:19:31,bullet,True,white,3266,3100,win,Normal
+fMIf8O0H,2026-01-19 10:19:00,bullet,True,black,3256,3103,win,Normal
+qqcAlGZe,2026-01-19 10:16:53,bullet,True,white,3246,3107,win,Normal
+OK63uLhA,2026-01-19 10:15:08,bullet,True,black,3233,3111,win,Normal
+EOwvdMyl,2025-11-25 14:41:55,bullet,True,black,3225,3015,win,Normal
+T0hqqeXL,2025-11-25 14:41:16,bullet,True,white,3218,3018,win,Normal
+U7vJv1HU,2025-05-24 20:59:28,arena,False,black,3226,3109,loss,Normal
+oPMO817E,2025-05-24 20:58:30,arena,False,white,3234,3072,loss,Normal
+ai4mXm5Q,2025-05-24 20:56:38,arena,False,black,3230,3108,win,Normal
+MoasISt2,2025-05-24 20:54:43,arena,False,white,3223,3283,win,Normal
+jdsZdqm4,2025-05-24 20:52:51,arena,False,black,3220,2998,win,Normal
+2WzTqTeg,2025-05-24 20:51:14,arena,False,white,3217,3020,win,Normal
+BdIlhVem,2025-05-24 20:50:37,arena,False,white,3210,3235,win,Normal
+X2ooxxhO,2025-05-24 20:48:43,arena,False,black,3205,3084,win,Normal
+iYUxzt1g,2025-05-24 20:46:37,arena,False,white,3201,3080,win,Normal
+jsnf9Tyl,2025-05-24 20:44:06,arena,False,white,3201,3224,draw,Time forfeit
+ZZImaDvj,2025-05-24 20:41:49,arena,False,black,3197,3004,win,Normal
+uZ8Ugjbm,2025-05-24 20:39:57,arena,False,black,3203,3266,loss,Normal
+fNUpn0oK,2025-05-24 20:37:59,arena,False,white,3200,2964,win,Normal
+MSkP4tKc,2025-05-24 20:37:01,arena,False,white,3195,3064,win,Normal
+ZjbAs7ai,2025-05-24 20:35:02,arena,False,black,3193,2857,win,Normal
+3YrxyLMY,2025-05-24 20:33:04,arena,False,white,3187,3110,win,Normal
+fcmhc2GV,2025-05-24 20:31:11,arena,False,black,3181,3118,win,Normal
+knxDYq5W,2025-05-24 20:29:55,arena,False,white,3176,3019,win,Normal
+9vzrfIrv,2025-05-24 20:27:47,arena,False,black,3184,3213,loss,Normal
+pHGFe1lT,2025-05-24 20:25:32,arena,False,black,3176,3151,win,Time forfeit
+WPYzAi4Z,2025-05-24 20:23:42,arena,False,white,3170,3090,win,Normal
+nvybf9EQ,2025-05-24 20:21:29,arena,False,black,3180,3103,loss,Normal
+5oquNjYQ,2025-05-24 20:19:00,arena,False,white,3187,3243,loss,Time forfeit
+OJozkZH3,2025-05-24 20:16:30,arena,False,black,3181,3064,win,Time forfeit
